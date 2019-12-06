@@ -9,8 +9,7 @@ readline
   })
 
   .on("line", mass => {
-    const fuel = Math.trunc(Number(mass) / 3) - 2;
-    totalFuel += fuel;
+    totalFuel += Math.trunc(Number(mass) / 3) - 2;
   })
 
   .on("close", () => {
