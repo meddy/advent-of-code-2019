@@ -1,108 +1,84 @@
 import fs from "fs";
 
-const ID = 5;
-
-function run(initial: number[]): void {
+function run(initial: number[], input: number): void {
   const program = [...initial];
 
-  let i = 0;
-  while (i < program.length) {
-    let opcode = program[i];
-    if (opcode === 3) {
-      const parameter = program[i + 1];
-      program[parameter] = ID;
-      i += 2;
-    } else {
-      const value = String(opcode);
-      opcode = Number(value.slice(-2));
-      const modes = value
-        .slice(0, value.length - 2)
-        .split("")
-        .reverse()
-        .map(Number);
+  let pointer = 0;
+  while (pointer < program.length) {
+    const opcodeValue = String(program[pointer]);
+    const opcode = Number(opcodeValue.slice(-2));
+    const modes = opcodeValue
+      .slice(0, opcodeValue.length - 2)
+      .split("")
+      .reverse()
+      .map(Number);
 
-      switch (opcode) {
-        case 99:
-          return;
-        case 1: {
-          const parameters = program.slice(i + 1, i + 4);
-          const value1 =
-            modes[0] === 1 ? parameters[0] : program[parameters[0]];
-          const value2 =
-            modes[1] === 1 ? parameters[1] : program[parameters[1]];
-          program[parameters[2]] = value1 + value2;
-          i += 4;
-          break;
+    switch (opcode) {
+      case 1:
+      case 2:
+      case 7:
+      case 8: {
+        const params = program.slice(pointer + 1, pointer + 4);
+        const value1 = modes[0] === 1 ? params[0] : program[params[0]];
+        const value2 = modes[1] === 1 ? params[1] : program[params[1]];
+        switch (opcode) {
+          case 1:
+            program[params[2]] = value1 + value2;
+            break;
+          case 2:
+            program[params[2]] = value1 * value2;
+            break;
+          case 7:
+            program[params[2]] = value1 < value2 ? 1 : 0;
+            break;
+          case 8:
+            program[params[2]] = value1 === value2 ? 1 : 0;
+            break;
         }
-        case 2: {
-          const parameters = program.slice(i + 1, i + 4);
-          const value1 =
-            modes[0] === 1 ? parameters[0] : program[parameters[0]];
-          const value2 =
-            modes[1] === 1 ? parameters[1] : program[parameters[1]];
-          program[parameters[2]] = value1 * value2;
-          i += 4;
-          break;
-        }
-        case 4: {
-          const parameter = program[i + 1];
-          console.log(program[parameter]);
-          i += 2;
-          break;
-        }
-        case 5: {
-          const parameters = program.slice(i + 1, i + 3);
-          const value1 =
-            modes[0] === 1 ? parameters[0] : program[parameters[0]];
-          const value2 =
-            modes[1] === 1 ? parameters[1] : program[parameters[1]];
-          if (value1 !== 0) {
-            i = value2;
-          } else {
-            i += 3;
-          }
-          break;
-        }
-        case 6: {
-          const parameters = program.slice(i + 1, i + 3);
-          const value1 =
-            modes[0] === 1 ? parameters[0] : program[parameters[0]];
-          const value2 =
-            modes[1] === 1 ? parameters[1] : program[parameters[1]];
-          if (value1 === 0) {
-            i = value2;
-          } else {
-            i += 3;
-          }
-          break;
-        }
-        case 7: {
-          const parameters = program.slice(i + 1, i + 4);
-          const value1 =
-            modes[0] === 1 ? parameters[0] : program[parameters[0]];
-          const value2 =
-            modes[1] === 1 ? parameters[1] : program[parameters[1]];
-          program[parameters[2]] = value1 < value2 ? 1 : 0;
-          i += 4;
-          break;
-        }
-        case 8: {
-          const parameters = program.slice(i + 1, i + 4);
-          const value1 =
-            modes[0] === 1 ? parameters[0] : program[parameters[0]];
-          const value2 =
-            modes[1] === 1 ? parameters[1] : program[parameters[1]];
-          program[parameters[2]] = value1 === value2 ? 1 : 0;
-          i += 4;
-          break;
-        }
-        default:
-          throw new Error(`Unknown opcode ${opcode}`);
+        pointer += 4;
+        break;
       }
+
+      case 3:
+      case 4: {
+        const param = program[pointer + 1];
+        if (opcode === 3) {
+          program[param] = input;
+        } else {
+          console.log(program[param]);
+        }
+
+        pointer += 2;
+        break;
+      }
+
+      case 5:
+      case 6: {
+        const params = program.slice(pointer + 1, pointer + 3);
+        const value1 = modes[0] === 1 ? params[0] : program[params[0]];
+        const value2 = modes[1] === 1 ? params[1] : program[params[1]];
+        if ((opcode === 5 && value1 !== 0) || (opcode === 6 && value1 === 0)) {
+          pointer = value2;
+        } else {
+          pointer += 3;
+        }
+        break;
+      }
+
+      case 99:
+        return;
+
+      default:
+        throw new Error(`Unknown opcode ${opcode}`);
     }
   }
 }
 
 const content = fs.readFileSync(process.argv[2], "utf8");
 const program = content.split(",").map(Number);
-run(program);
+
+console.log("Part 1");
+run(program, 1);
+
+console.log("Part 2");
+run(program, 5);
