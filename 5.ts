@@ -1,6 +1,6 @@
 import fs from "fs";
 
-const ID = 1;
+const ID = 5;
 
 function run(initial: number[]): void {
   const program = [...initial];
@@ -48,6 +48,52 @@ function run(initial: number[]): void {
           const parameter = program[i + 1];
           console.log(program[parameter]);
           i += 2;
+          break;
+        }
+        case 5: {
+          const parameters = program.slice(i + 1, i + 3);
+          const value1 =
+            modes[0] === 1 ? parameters[0] : program[parameters[0]];
+          const value2 =
+            modes[1] === 1 ? parameters[1] : program[parameters[1]];
+          if (value1 !== 0) {
+            i = value2;
+          } else {
+            i += 3;
+          }
+          break;
+        }
+        case 6: {
+          const parameters = program.slice(i + 1, i + 3);
+          const value1 =
+            modes[0] === 1 ? parameters[0] : program[parameters[0]];
+          const value2 =
+            modes[1] === 1 ? parameters[1] : program[parameters[1]];
+          if (value1 === 0) {
+            i = value2;
+          } else {
+            i += 3;
+          }
+          break;
+        }
+        case 7: {
+          const parameters = program.slice(i + 1, i + 4);
+          const value1 =
+            modes[0] === 1 ? parameters[0] : program[parameters[0]];
+          const value2 =
+            modes[1] === 1 ? parameters[1] : program[parameters[1]];
+          program[parameters[2]] = value1 < value2 ? 1 : 0;
+          i += 4;
+          break;
+        }
+        case 8: {
+          const parameters = program.slice(i + 1, i + 4);
+          const value1 =
+            modes[0] === 1 ? parameters[0] : program[parameters[0]];
+          const value2 =
+            modes[1] === 1 ? parameters[1] : program[parameters[1]];
+          program[parameters[2]] = value1 === value2 ? 1 : 0;
+          i += 4;
           break;
         }
         default:
