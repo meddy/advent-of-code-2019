@@ -1,5 +1,22 @@
 import fs from "fs";
 
+enum Opcode {
+  Add = 1,
+  Multiply = 2,
+  Input = 3,
+  Output = 4,
+  JumpNoZero = 5,
+  JumpZero = 6,
+  LessThan = 7,
+  Equals = 8,
+  Halt = 99
+}
+
+enum Mode {
+  position = 0,
+  immediate = 1
+}
+
 function run(initial: number[], input: number): void {
   const program = [...initial];
 
@@ -14,24 +31,27 @@ function run(initial: number[], input: number): void {
       .map(Number);
 
     switch (opcode) {
-      case 1:
-      case 2:
-      case 7:
-      case 8: {
+      case Opcode.Add:
+      case Opcode.Multiply:
+      case Opcode.LessThan:
+      case Opcode.Equals: {
         const params = program.slice(pointer + 1, pointer + 4);
-        const value1 = modes[0] === 1 ? params[0] : program[params[0]];
-        const value2 = modes[1] === 1 ? params[1] : program[params[1]];
+        const value1 =
+          modes[0] === Mode.immediate ? params[0] : program[params[0]];
+        const value2 =
+          modes[1] === Mode.immediate ? params[1] : program[params[1]];
+
         switch (opcode) {
-          case 1:
+          case Opcode.Add:
             program[params[2]] = value1 + value2;
             break;
-          case 2:
+          case Opcode.Multiply:
             program[params[2]] = value1 * value2;
             break;
-          case 7:
+          case Opcode.LessThan:
             program[params[2]] = value1 < value2 ? 1 : 0;
             break;
-          case 8:
+          case Opcode.Equals:
             program[params[2]] = value1 === value2 ? 1 : 0;
             break;
         }
@@ -39,10 +59,10 @@ function run(initial: number[], input: number): void {
         break;
       }
 
-      case 3:
-      case 4: {
+      case Opcode.Input:
+      case Opcode.Output: {
         const param = program[pointer + 1];
-        if (opcode === 3) {
+        if (opcode === Opcode.Input) {
           program[param] = input;
         } else {
           console.log(program[param]);
@@ -52,12 +72,18 @@ function run(initial: number[], input: number): void {
         break;
       }
 
-      case 5:
-      case 6: {
+      case Opcode.JumpNoZero:
+      case Opcode.JumpZero: {
         const params = program.slice(pointer + 1, pointer + 3);
-        const value1 = modes[0] === 1 ? params[0] : program[params[0]];
-        const value2 = modes[1] === 1 ? params[1] : program[params[1]];
-        if ((opcode === 5 && value1 !== 0) || (opcode === 6 && value1 === 0)) {
+        const value1 =
+          modes[0] === Mode.immediate ? params[0] : program[params[0]];
+        const value2 =
+          modes[1] === Mode.immediate ? params[1] : program[params[1]];
+
+        if (
+          (opcode === Opcode.JumpNoZero && value1 !== 0) ||
+          (opcode === Opcode.JumpZero && value1 === 0)
+        ) {
           pointer = value2;
         } else {
           pointer += 3;
@@ -65,7 +91,7 @@ function run(initial: number[], input: number): void {
         break;
       }
 
-      case 99:
+      case Opcode.Halt:
         return;
 
       default:
